@@ -3,11 +3,13 @@ package me.tiagoluz.forum.controller;
 import me.tiagoluz.forum.controller.dto.DetalhesTopicoDto;
 import me.tiagoluz.forum.controller.dto.TopicoDto;
 import me.tiagoluz.forum.controller.form.TopicoForm;
+import me.tiagoluz.forum.controller.form.UpdateTopicForm;
 import me.tiagoluz.forum.model.Topico;
 import me.tiagoluz.forum.repository.CursoRepository;
 import me.tiagoluz.forum.repository.TopicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -38,6 +40,7 @@ public class TopicoController {
   }
 
   @PostMapping
+  @Transactional
   public ResponseEntity<TopicoDto> cadastrar(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder) {
     Topico topico = form.converter(cursoRepository);
     topicoRepository.save(topico);
@@ -47,11 +50,23 @@ public class TopicoController {
   }
 
   @GetMapping("/{id}")
-  public DetalhesTopicoDto detalhar(@PathVariable Long id) {
+  public DetalhesTopicoDto detail(@PathVariable Long id) {
     Topico topico = topicoRepository.getOne(id);
     return new DetalhesTopicoDto(topico);
   }
 
+  @PutMapping("/{id}")
+  @Transactional
+  public ResponseEntity<TopicoDto> update(@PathVariable Long id, @RequestBody @Valid UpdateTopicForm form) {
+    Topico topico = form.update(id, topicoRepository);
+    return ResponseEntity.ok(new TopicoDto(topico));
+  }
 
+  @DeleteMapping("/{id}")
+  @Transactional
+  public ResponseEntity<?> delete(@PathVariable Long id) {
+    topicoRepository.deleteById(id);
+    return ResponseEntity.ok().build();
+  }
 
 }
