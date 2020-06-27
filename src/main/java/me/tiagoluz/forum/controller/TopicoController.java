@@ -8,6 +8,9 @@ import me.tiagoluz.forum.model.Topico;
 import me.tiagoluz.forum.repository.CursoRepository;
 import me.tiagoluz.forum.repository.TopicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -29,13 +32,18 @@ public class TopicoController {
   private CursoRepository cursoRepository;
 
   @GetMapping
-  public List<TopicoDto> lista(String nomeCurso) {
+  public Page<TopicoDto> lista(
+  @RequestParam(required = false) String nomeCurso,
+  @RequestParam int page,
+  @RequestParam int amt) {
+
+    Pageable pageable = PageRequest.of(page, amt);
     System.out.println(nomeCurso);
     if (nomeCurso == null) {
-      List<Topico> topicos = topicoRepository.findAll();
+      Page<Topico> topicos = topicoRepository.findAll(pageable);
       return TopicoDto.converter(topicos);
     } else {
-      List<Topico> topicos = topicoRepository.findByCursoNome(nomeCurso);
+      Page<Topico> topicos = topicoRepository.findByCursoNome(nomeCurso, pageable);
       return TopicoDto.converter(topicos);
     }
   }
