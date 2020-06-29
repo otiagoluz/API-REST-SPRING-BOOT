@@ -8,6 +8,8 @@ import me.tiagoluz.forum.model.Topico;
 import me.tiagoluz.forum.repository.CursoRepository;
 import me.tiagoluz.forum.repository.TopicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,10 +36,10 @@ public class TopicoController {
   private CursoRepository cursoRepository;
 
   @GetMapping
+  @Cacheable(value = "topicList")
   public Page<TopicoDto> lista(
   @RequestParam(required = false) String nomeCurso,
   @PageableDefault(sort = "id", page = 0, size = 10, direction = Sort.Direction.ASC) Pageable pageable) {
-
     System.out.println(nomeCurso);
     if (nomeCurso == null) {
       Page<Topico> topicos = topicoRepository.findAll(pageable);
@@ -50,6 +52,7 @@ public class TopicoController {
 
   @PostMapping
   @Transactional
+  @CacheEvict(value = "topicList", allEntries = true)
   public ResponseEntity<TopicoDto> cadastrar(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder) {
     Topico topico = form.converter(cursoRepository);
     topicoRepository.save(topico);
@@ -73,6 +76,7 @@ public class TopicoController {
 
   @PutMapping("/{id}")
   @Transactional
+  @CacheEvict(value = "topicList", allEntries = true)
   public ResponseEntity<TopicoDto> update(@PathVariable Long id, @RequestBody @Valid UpdateTopicForm form) {
     Optional<Topico> optional = topicoRepository.findById(id);
     if (optional.isPresent()) {
@@ -84,6 +88,7 @@ public class TopicoController {
 
   @DeleteMapping("/{id}")
   @Transactional
+  @CacheEvict(value = "topicList", allEntries = true)
   public ResponseEntity<?> delete(@PathVariable Long id) {
     Optional<Topico> optional = topicoRepository.findById(id);
     if (optional.isPresent()) {
